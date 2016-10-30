@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>D3 Chapter 1</title>
+	<script src="/node_modules/d3/build/d3.js"></script>
+	<style>
+		div.bar {
+			display: inline-block;
+			width: 20px;
+			height: 75px;
+			margin-right: 2px;
+		}
+	</style>
+</head>
+
+<body>
+	<p>Click on this text to update the chart with new data values (once).</p>
+	<script>
+    var dataset = [ 25, 7, 5, 26, 11, 8, 25, 14, 23, 19,
+                 11, 13, 12, 17, 18, 10, 21, 23,
+                24, 18, 25, 9, 3 ];
+
+    var w = 600;
+    var h = 250;
+    var padding = 20;
+    
+    var colors = dataset.map(function(d) {
+      return `rgb(${d * 2}, ${d* 2}, ${d* 5})`;
+    });
+
+    var svg = d3.select('body')
+                .append('svg')
+                .attr('width', w)
+                .attr('height', h);
+
+
+    var xScale = d3.scaleBand() // like ordinal, but perfect for bar charts
+    .domain(d3.range(dataset.length)) // but it doesnt have order, just needs positioning
+    .rangeRound([padding, w], 0.05) // for the width of the bar, equal spacing
+    .paddingInner([0.2]) // inner padding
+    .paddingOuter([0.2]) // outer padding
+    .align([0.5]) // align it
+
+    var yScale = d3.scaleLinear()
+    .domain([0, d3.max(dataset, d => d)])
+    .range([h - padding, padding])
+    .clamp(true);
+    
+
+
+
+    svg.selectAll('rect') // select all rect
+      .data(dataset) // counts and parse data values. (everything after is done 5 times.)
+      .enter() // look at DOM selection + data. data > DOM, new placeholder els are added and makes a ref
+      .append('rect') // appends rect
+      .attr('x', (d, i) => xScale(i))
+      .attr('y', d => yScale(d)) // height - data value
+      .attr('width', xScale.bandwidth()) //w / dataset.length - barPadding (before it was rangeBand())
+      .attr('height', d => yScale(0) - yScale(d))
+      .attr('fill', (d,i) => colors[i]);
+
+
+      /*
+      You’ll recall that, when drawing SVG rects, the x and y values specify the coordinates of the upper-left corner. That is, the origin or reference point for every rect is its top-left. For our purposes, it would be soooooo much easier to set the origin point as the bottom-left corner, but that’s just not how SVG does it, and frankly, SVG is pretty indifferent about our feelings on the matter.
+      */
+
+      svg.selectAll('text')
+        .data(dataset)
+        .enter()
+        .append('text')
+        .text(d=>d)
+        .attr("x", function(d, i) {
+        return i * (w / dataset.length) + 5;
+   })
+   .attr("y", function(d) {
+        return yScale(d) + 14
+   })
+   .attr("text-anchor", "middle")
+   .attr("x", function(d, i) {
+     return xScale(i) + xScale.bandwidth() / 2;
+    })
+    .attr("font-family", "sans-serif")
+   .attr("font-size", "11px")
+   .attr('fill', 'white');
+
+   var xAxis = d3.axisBottom().scale(xScale);
+   var yAxis = d3.axisLeft().scale(yScale);
+
+
+   svg.append("g")
+    .attr("class", "x axis")    // <-- Note x added here
+    .attr("transform", "translate(0," + yScale(0) + ")")
+    .call(xAxis);
+
+//Create y-axis
+svg.append("g")
+    .attr("class", "y axis")    // <-- Note y added here
+    .attr("transform", "translate(" + padding + ",0)")
+    .call(yAxis);
+
+
+   // updating data
+   d3.select('p').on('click', update)
+
+   setInterval(() => update(), 1000);
+
+function update () {
+  // New values for dataset
+  var numValues = dataset.length // Count original length of dataset
+  dataset = [] // Initialize empty array
+  for (var i = 0; i < numValues; i++) { // Loop numValues times
+    var newNumber = Math.floor(Math.random() * 100); // New random integer (0-24)
+    dataset.push(newNumber) // Add new number to array
+  }
+
+  // update the yScale with new values
+  yScale.domain([0, d3.max(dataset)])
+
+  // Update x-axis
+  svg.select('.x.axis')
+    .transition()
+    .duration(1000)
+    .call(xAxis)
+
+  // Update y-axis
+  svg.select('.y.axis')
+    .transition()
+    .duration(1000)
+    .call(yAxis)
+
+  // 2. rebind new values to existing elements
+  svg.selectAll('rect')
+    .data(dataset)
+    .transition()
+    .delay((d, i) => i / dataset.length * 1000) // at a time, 1
+    .duration(500)
+    .ease(d3.easeLinear) // v3 was 'linear'
+    .attr('y', d => yScale(d))
+    .attr('height', d => yScale(0) - yScale(d))
+
+  svg.selectAll('text')
+    .data(dataset)
+    .transition()
+    .delay((d, i) => i / dataset.length * 1000) // at a time, 1
+    .duration(500)
+    .ease(d3.easeSin) // v3 was 'linear
+    .text(function (d) {
+      return d
+    })
+    .attr('x', function (d, i) {
+      return xScale(i) + xScale.bandwidth() / 2
+    })
+    .attr('y', function (d) {
+      return yScale(d) + 14
+    })
+}
+
+ 
+
+  </script>
+</body>
+
+</html>

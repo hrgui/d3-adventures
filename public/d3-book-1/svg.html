@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3 Chapter 1</title>
+  <script src="/node_modules/d3/build/d3.js"></script>
+<style>
+  div.bar {
+    display: inline-block;
+    width: 20px;
+    height: 75px;
+    margin-right: 2px;
+  }
+</style>
+</head>
+
+<body>
+  <script>
+
+    var dataset = [ 5, 10, 15, 20, 25 ];
+
+    var colors = dataset.map(function(d) {
+      return `rgb(${d * 2}, ${d* 2}, ${d* 5})`;
+    });
+
+    var w = 500;
+    var h = 50;
+
+    var svg = d3.select('body').append('svg');
+
+    var circles = svg.selectAll('circle') // all empty
+      .data(dataset)
+      .enter()
+      .append('circle');
+
+      circles.attr('cx', (d,i) => (i*50) + 25) // cx: x position value of the center of the circle, i=> index
+      .attr('cy', h/2) // height of the svg / 2 per circle
+      .attr('r', d => d) // radius of the circle
+      .attr('fill', (d,i) => colors[i])
+      .attr('stroke', 'red')
+      .attr('stroke-width', d=> d/2)
+
+
+  </script>
+</body>
+</html>

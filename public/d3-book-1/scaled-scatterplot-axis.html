@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>D3 Chapter 1</title>
+  <script src="/node_modules/d3/build/d3.js"></script>
+
+  <style>
+    .axis path, .axis line {
+      fill: none;
+      stroke: black;
+      shape-rendering: crispEdges;
+    }
+
+    .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+    }
+
+  </style>
+
+</head>
+<body>
+  <script>
+    var dataset = [];
+var numDataPoints = 50;
+var xRange = Math.random() * 1000;
+var yRange = Math.random() * 1000;
+for (var i = 0; i < numDataPoints; i++) {
+    var newNumber1 = Math.floor(Math.random() * xRange);
+    var newNumber2 = Math.floor(Math.random() * yRange);
+    dataset.push([newNumber1, newNumber2]);
+}
+
+            var w = 500,
+            h = 300
+
+    //Create SVG element
+var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+var padding = 30;
+
+// added this thing
+var xScale = d3.scaleLinear()
+.domain([0, d3.max(dataset, d => d[0])])
+.range([padding, w - padding * 2])
+.clamp(true); // stay in the range if d3.max wasnt used
+//if given a value outside of its expected input domain, a scale will return a number also outside of the output range
+
+// e.g. domain [0, 100] [0, 200], input: 25 => output => 50  
+
+var yScale = d3.scaleLinear()
+.domain([0, d3.max(dataset, d => d[1])])
+.range([h - padding, padding])
+.clamp(true); // stays in the range
+
+var rScale = d3.scaleLinear()
+.domain([0, d3.max(dataset, d => d[1])])
+.range([2,5])
+
+svg.selectAll("circle")  // <-- No longer "rect"
+   .data(dataset)
+   .enter()
+   .append("circle")     // <-- No longer "rect"
+   .attr("cx", function(d) {
+        return xScale(d[0]);
+   })
+   .attr("cy", function(d) {
+        return yScale(d[1]);
+   })
+   .attr("r", function(d) {
+    return rScale(d[1]);
+   });
+
+// no need text 
+/*
+svg.selectAll('text')
+.data(dataset)
+.enter()
+.append('text')
+.text(d => `${d[0]},${d[1]}`)
+.attr('x', d => xScale(d[0]))
+.attr('y', d => yScale(d[1]))
+  .attr("font-family", "sans-serif")
+   .attr("font-size", "11px")
+   .attr("fill", "red");
+   */
+
+
+   // heres how you add an axis!!
+
+   //var formatAsPercentage = d3.format('.1%');
+   //.tickFormat(formatAsPercentage)
+
+   var xAxis = d3.axisBottom()
+   .scale(xScale)
+   .ticks(5); // num of ticks
+
+   svg.append('g')
+   .attr('class', 'axis')
+    .attr("transform", "translate(0," + (h - padding) + ")") // put it all the way down
+   .call(xAxis);
+
+   var yAxis = d3.axisLeft()
+    .scale(yScale)
+    .ticks(5);
+
+    svg.append('g')
+    .attr('class', 'axis')
+    .attr('transform', `translate(${padding}, 0)`)
+    .call(yAxis);
+
+
+   
+  </script>
+</body>
+</html>
